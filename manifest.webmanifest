@@ -1,6 +1,6 @@
 {
-  "name": "Coduri QR Voluntari",
-  "short_name": "Coduri QR",
+  "name": "QR_codes_volunteers_CRT",
+  "short_name": "QR_codes",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
