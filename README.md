@@ -1,2 +1,2 @@
-# QR_Codes_Volunteers_CRT
+# QR_Codes_Test
 Simple storage for personal usage
