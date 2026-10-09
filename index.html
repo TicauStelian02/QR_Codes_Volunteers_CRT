@@ -108,18 +108,15 @@ input[type=text],input[type=email],textarea,select{font:inherit;color:var(--fg);
 </head>
 <body>
 
-<!-- ===== CONFIGURARE: lipește aici datele proiectului Firebase (vezi GHID.md, pasul 3) ===== -->
 <script>
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  appId: ""
+  apiKey: "AIzaSyA554vvX5QWSWYneUAXi9ppprXHpgl5YbI",
+  authDomain: "AIzaSyA554vvX5QWSWYneUAXi9ppprXHpgl5YbI",
+  projectId: "qr-code-voluntari",
+  appId: "1:152882089319:web:dcebde7e6e79702eed73c2"
 };
-// Adresa ta: administratorul care gestionează accesul. Trebuie să fie aceeași ca în firestore.rules.
 window.ADMIN_EMAIL = "ticaustelian@gmail.com";
 </script>
-<!-- ======================================================================================= -->
 
 <div id="setup" class="login" hidden>
   <div class="lbox"><h1>Site-ul nu e configurat încă</h1><p>Completează <b>FIREBASE_CONFIG</b> în fișierul index.html, conform pasului 3 din GHID.md.</p></div>
@@ -445,7 +442,6 @@ $("form").addEventListener("submit", async e => {
 });
 
 /* ---------- backup download ---------- */
-// ZIP with one image per volunteer ("Nume Prenume.png"), a CSV list and an offline gallery page.
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 $("dlBtn").onclick = async () => {
   if (typeof JSZip === "undefined") { toast("Nu am putut pregăti arhiva. Reîncarcă pagina."); return; }
