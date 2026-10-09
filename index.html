@@ -5,12 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Coduri QR Voluntari</title>
 <meta name="theme-color" content="#c8102e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-
+/* Layout: sticky search bar over a dense card grid; tap a card for a full-screen white scan view */
 :root{
   --bg:#f3f4f6; --surface:#ffffff; --fg:#1b1d22; --muted:#5f6470; --line:#dcdfe5;
   --accent:#c8102e; --accent-ink:#ffffff;
@@ -57,7 +62,7 @@ button{font:inherit;cursor:pointer}
 .letter{grid-column:1/-1;font-family:var(--mono);color:var(--accent);font-size:.85rem;letter-spacing:.08em;padding-top:8px;border-bottom:1px solid var(--line)}
 .empty{background:var(--surface);border:1.5px dashed var(--line);border-radius:12px;padding:28px 20px;text-align:center;color:var(--muted);margin-top:8px}
 .empty strong{display:block;color:var(--fg);font-family:var(--display);font-size:1.15rem;margin-bottom:4px}
-
+/* login */
 .login{min-height:80vh;display:grid;place-items:center;padding-inline:16px}
 .lbox{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 20px;display:flex;flex-direction:column;gap:14px}
 .lbox h1{font-size:1.4rem}
@@ -66,7 +71,7 @@ button{font:inherit;cursor:pointer}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 .ok{color:#1a7f37;font-weight:600}
 @media (prefers-color-scheme:dark){.ok{color:#4ac26b}}
-
+/* sheets */
 .sheet{position:fixed;inset:0;z-index:20;background:rgba(10,12,16,.55);display:grid;place-items:end center}
 @media(min-width:640px){.sheet{place-items:center}}
 .panel{background:var(--surface);color:var(--fg);width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:92vh;overflow:auto}
@@ -86,7 +91,7 @@ input[type=text],input[type=email],textarea,select{font:inherit;color:var(--fg);
 .people .em{min-width:0;overflow-wrap:anywhere}
 .pill{font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .pill.ed{border-color:var(--accent);color:var(--accent)}
-
+/* scan view: always white for scanners */
 .scan{position:fixed;inset:0;z-index:30;background:#ffffff;color:#111;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .scan .tools{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .icon{border:1.5px solid #d6d8dd;background:#fff;color:#111;border-radius:10px;padding:10px 14px;font-weight:600}
@@ -103,16 +108,18 @@ input[type=text],input[type=email],textarea,select{font:inherit;color:var(--fg);
 </head>
 <body>
 
-
+<!-- ===== CONFIGURARE: lipește aici datele proiectului Firebase (vezi GHID.md, pasul 3) ===== -->
 <script>
 window.FIREBASE_CONFIG = {
-  apiKey: "AIzaSyA554vvX5QWSWYneUAXi9ppprXHpgl5YbI",
-  authDomain: "qr-code-voluntari.firebaseapp.com",
-  projectId: "qr-code-voluntari",
-  appId: "1:152882089319:web:dcebde7e6e79702eed73c2"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  appId: ""
 };
+// Adresa ta: administratorul care gestionează accesul. Trebuie să fie aceeași ca în firestore.rules.
 window.ADMIN_EMAIL = "ticaustelian@gmail.com";
 </script>
+<!-- ======================================================================================= -->
 
 <div id="setup" class="login" hidden>
   <div class="lbox"><h1>Site-ul nu e configurat încă</h1><p>Completează <b>FIREBASE_CONFIG</b> în fișierul index.html, conform pasului 3 din GHID.md.</p></div>
@@ -130,6 +137,7 @@ window.ADMIN_EMAIL = "ticaustelian@gmail.com";
     <div class="or">sau</div>
     <button class="btn ghost" type="button" id="lGoogle">Continuă cu Google</button>
     <div class="err" id="lMsg" role="status"></div>
+    <button class="btn ghost installBtn" type="button" hidden>📲 Instalează aplicația pe acest dispozitiv</button>
   </form>
 </div>
 
@@ -151,6 +159,7 @@ window.ADMIN_EMAIL = "ticaustelian@gmail.com";
     </div>
     <div class="me">
       <span id="meEmail"></span>
+      <button class="btn small installBtn" type="button" hidden>📲 Instalează aplicația</button>
       <button class="btn ghost small" id="dlBtn" hidden>Descarcă copie</button>
       <button class="btn ghost small" id="accessBtn" hidden>Acces</button>
       <button class="btn ghost small" id="outBtn">Ieși</button>
@@ -225,6 +234,24 @@ window.ADMIN_EMAIL = "ticaustelian@gmail.com";
 </div>
 <div class="toast" id="toast" hidden></div>
 
+<script>
+// Install as an app: Chrome/Brave on Android and desktop offer this once the page qualifies.
+(function(){
+  var deferred = null, btns = document.querySelectorAll(".installBtn");
+  function setVisible(v){ for (var i=0;i<btns.length;i++) btns[i].hidden = !v; }
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); deferred = e; setVisible(true); });
+  window.addEventListener("appinstalled", function(){ deferred = null; setVisible(false); });
+  for (var i=0;i<btns.length;i++) btns[i].addEventListener("click", function(){
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.finally(function(){ deferred = null; setVisible(false); });
+  });
+})();
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
@@ -274,15 +301,36 @@ $("loginForm").addEventListener("submit", async e => {
     $("lMsg").className = "ok"; $("lMsg").textContent = "Gata! Verifică emailul (și folderul Spam) și apasă pe link.";
   } catch(err) {
     $("lMsg").className = "err";
-    $("lMsg").textContent = err.code === "auth/quota-exceeded"
-      ? "S-a atins limita zilnică de emailuri. Folosește „Continuă cu Google” sau încearcă mâine."
-      : "Nu am putut trimite linkul. Verifică adresa și încearcă din nou.";
+    $("lMsg").textContent = authMsg(err);
   } finally { $("lSend").disabled = false; }
 });
+// Explains each common setup error in plain words, with the code for troubleshooting.
+function authMsg(err){
+  const c = (err && err.code) || "";
+  const m = {
+    "auth/quota-exceeded": "S-a atins limita de 5 emailuri pe zi. Folosește „Continuă cu Google” sau încearcă mâine.",
+    "auth/operation-not-allowed": "Logarea cu link pe email nu e activată. În Firebase: Authentication → Sign-in method → Email/Password → activează și „Email link (passwordless sign-in)”.",
+    "auth/unauthorized-continue-uri": "Adresa site-ului nu e autorizată. În Firebase: Authentication → Settings → Authorized domains → adaugă domeniul site-ului (ex. numele-tau.github.io).",
+    "auth/unauthorized-domain": "Adresa site-ului nu e autorizată. În Firebase: Authentication → Settings → Authorized domains → adaugă domeniul site-ului (ex. numele-tau.github.io).",
+    "auth/invalid-continue-uri": "Pagina e deschisă direct din fișier de pe calculator. Logarea merge doar pe site-ul publicat (pasul 6 din ghid).",
+    "auth/missing-continue-uri": "Pagina e deschisă direct din fișier de pe calculator. Logarea merge doar pe site-ul publicat (pasul 6 din ghid).",
+    "auth/operation-not-supported-in-this-environment": "Pagina e deschisă direct din fișier de pe calculator. Logarea merge doar pe site-ul publicat (pasul 6 din ghid).",
+    "auth/invalid-email": "Adresa de email nu e validă. Verifică să nu aibă spații.",
+    "auth/invalid-api-key": "Cheia apiKey din index.html e greșită. Copiaz-o din nou din Firebase (pasul 3).",
+    "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "Cheia apiKey din index.html e greșită. Copiaz-o din nou din Firebase (pasul 3).",
+    "auth/configuration-not-found": "Authentication nu e pornit în Firebase. Build → Authentication → Get started (pasul 4).",
+    "auth/network-request-failed": "Nu e conexiune la internet sau o extensie (ad-blocker) blochează Firebase.",
+    "auth/popup-blocked": "Browserul a blocat fereastra Google. Permite pop-up-urile pentru acest site și încearcă din nou.",
+    "auth/too-many-requests": "Prea multe încercări. Așteaptă câteva minute."
+  };
+  return (m[c] || "Nu a mers.") + (c ? " (cod: " + c + ")" : "");
+}
 $("lGoogle").onclick = async () => {
+  $("lMsg").className = "err"; $("lMsg").textContent = "";
   try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch(e){ if (e.code !== "auth/popup-closed-by-user") $("lMsg").textContent = "Logarea cu Google nu a reușit. Încearcă din nou."; }
+  catch(e){ if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("lMsg").textContent = authMsg(e); }
 };
+if (location.protocol === "file:") $("lMsg").textContent = "Pagina e deschisă direct din fișier. Logarea merge doar pe site-ul publicat (pasul 6 din ghid).";
 const out = () => signOut(auth);
 $("dOut").onclick = out; $("outBtn").onclick = out;
 
@@ -396,6 +444,7 @@ $("form").addEventListener("submit", async e => {
   finally { $("save").disabled=false; }
 });
 
+/* ---------- backup download ---------- */
 // ZIP with one image per volunteer ("Nume Prenume.png"), a CSV list and an offline gallery page.
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 $("dlBtn").onclick = async () => {
